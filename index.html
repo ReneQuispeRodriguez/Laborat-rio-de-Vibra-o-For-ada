@@ -368,17 +368,32 @@ footer b{color:var(--ink);font-weight:600}
     const ink=css('--ink'), muted=css('--muted'), acc_=css('--accent'), force=css('--force'), soft=css('--soft');
     g.clearRect(0,0,w,h);
     const floorY = h-24, wallX = 18;
-    const mh = Math.min(70, h*0.42), mw = mh*1.12;
+    const mh = Math.min(70, h*0.42, w*0.12), mw = mh*1.12;
     const A = Math.min(46, w*0.085);                 // comprimento máx. da seta
     const avail = w - wallX - mw - 2*A - 18;
-    const rest = avail*0.52, travel = avail*0.42;
-    const u = clamp(S.x / S.scale, -1.15, 1.15);
+    // x = 0 mais à direita; escala de deslocamento FIXA (logarítmica) até a ruptura,
+    // para que o crescimento da amplitude apareça na animação
+    const rest = avail*0.60, travel = avail*0.37;
+    const U = v => Math.sign(v)*Math.log1p(Math.abs(v))/Math.log1p(LIMIT);
+    const u = clamp(U(S.x), -1.08, 1.08);
     const mx = wallX + rest + travel*u;
     const eqX = wallX + rest + mw/2;
     // faixa de amplitude recente
-    const am = clamp(recentAmp()/S.scale, 0, 1.15)*travel;
+    const am = clamp(U(recentAmp()), 0, 1.08)*travel;
     g.fillStyle = sevColor(recentAmp()); g.globalAlpha = 0.12;
     g.fillRect(eqX-am, floorY-mh-14, 2*am, mh+14); g.globalAlpha = 1;
+    // régua de deslocamento (δst) sobre o piso
+    g.font = '10px "IBM Plex Mono", monospace'; g.textAlign='center';
+    [1,5,10,25,50].forEach(v=>{
+      [-1,1].forEach(sg=>{
+        const tx = eqX + sg*U(v)*travel;
+        const crit = v===LIMIT;
+        g.strokeStyle = crit ? css('--crit') : css('--muted'); g.lineWidth = crit ? 2 : 1;
+        g.beginPath(); g.moveTo(tx, floorY-(crit?14:7)); g.lineTo(tx, floorY); g.stroke();
+        const lab = w<520 ? (v===10 || crit) : true;
+        if((sg>0 && lab) || crit){ g.fillStyle = crit ? css('--crit') : css('--muted'); g.fillText(crit ? (sg>0?'+50':'−50') : String(v), tx, floorY-(crit?17:10)); }
+      });
+    });
     // parede e piso
     g.strokeStyle = muted; g.lineWidth = 1;
     for(let y=10; y<floorY; y+=9){ g.beginPath(); g.moveTo(wallX-10,y+9); g.lineTo(wallX,y); g.stroke(); }
@@ -392,7 +407,7 @@ footer b{color:var(--ink);font-weight:600}
     g.fillText('x = 0', eqX, floorY-mh-24);
     // mola (cor indica tração/compressão)
     const sy = floorY - mh*0.72, n = 12, x1 = wallX, x2 = mx;
-    const st = clamp(S.x/S.scale,-1,1);
+    const st = clamp(U(S.x),-1,1);
     g.strokeStyle = st>0.05 ? css('--force') : (st<-0.05 ? acc_ : ink); g.globalAlpha = 0.55 + 0.45*Math.abs(st);
     g.lineWidth = 2; g.beginPath(); g.moveTo(x1,sy);
     const lead = 8, seg = (x2-x1-2*lead)/n;
@@ -411,7 +426,8 @@ footer b{color:var(--ink);font-weight:600}
     // massa
     const grd = g.createLinearGradient(mx, floorY-mh-4, mx, floorY-4);
     grd.addColorStop(0, soft); grd.addColorStop(1, css('--panel'));
-    g.fillStyle = grd; g.strokeStyle = acc_; g.lineWidth = 2;
+    const sev = recentAmp();
+    g.fillStyle = grd; g.strokeStyle = sev < 10 ? acc_ : (sev < 25 ? css('--warn') : css('--crit')); g.lineWidth = sev < 10 ? 2 : 3;
     g.beginPath(); if(g.roundRect) g.roundRect(mx, floorY-mh-4, mw, mh, 6); else g.rect(mx, floorY-mh-4, mw, mh); g.fill(); g.stroke();
     g.fillStyle = ink; g.beginPath(); g.arc(mx+mw*0.24, floorY-2.5, 4, 0, 7); g.arc(mx+mw*0.76, floorY-2.5, 4, 0, 7); g.fill();
     g.fillStyle = acc_; g.font = 'italic 600 20px "IBM Plex Sans", sans-serif'; g.textAlign='center';
