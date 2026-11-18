@@ -112,12 +112,13 @@ footer{font-size:12px;color:var(--muted)}
         <h2>O sistema <small id="clock">t = 0,0 s</small></h2>
         <div class="overlay">
           <canvas id="anim" aria-label="Animação do sistema massa-mola-amortecedor"></canvas>
-          <div class="broken" id="broken"><div><strong>Ruptura!</strong><span>A amplitude passou de 30 vezes o deslocamento estático. Numa estrutura real, algo teria escoado ou rompido antes disso.</span><span><button class="primary" id="brokenReset">Reiniciar</button></span></div></div>
+          <div class="broken" id="broken"><div><strong>Ruptura!</strong><span>A amplitude passou de 50 vezes o deslocamento estático. Numa estrutura real, algo teria escoado ou rompido antes disso.</span><span><button class="primary" id="brokenReset">Reiniciar</button></span></div></div>
         </div>
         <div class="btns">
           <button class="primary" id="play">Pausar</button>
           <button id="reset">Reiniciar</button>
           <button id="speed" aria-pressed="false">Câmera lenta</button>
+          <button id="fast" aria-pressed="false">Acelerar 4×</button>
         </div>
       </section>
 
@@ -146,7 +147,7 @@ footer{font-size:12px;color:var(--muted)}
         <div class="controls">
           <div class="ctl">
             <label for="r">Razão de frequências r = ω/ω₀</label><output id="rOut" for="r"></output>
-            <input type="range" id="r" min="0.05" max="3" step="0.01" value="0.9">
+            <input type="range" id="r" min="0.05" max="3" step="0.005" value="0.9">
             <span class="hint">Quão rápido a força empurra, comparado ao ritmo natural da estrutura.</span>
           </div>
           <div class="ctl">
@@ -173,6 +174,7 @@ footer{font-size:12px;color:var(--muted)}
             <button data-r="1" data-xi="0.05">Ressonância amortecida</button>
             <button data-r="2.5" data-xi="0">Força rápida</button>
             <button data-sweep="1">Máquina de lavar</button>
+            <button data-r="1.025" data-xi="0">Exemplo (c) da apostila</button>
           </div>
         </div>
       </section>
@@ -202,7 +204,7 @@ footer{font-size:12px;color:var(--muted)}
       <p>Com ξ = 0, use r = 0,9 e depois r = 0,95. Meça no gráfico o tempo entre dois “nós” do batimento. Confere com T<sub>b</sub> = 2π/|ω₀ − ω|?</p></div><details><summary>Ver resposta</summary><p>Como ω₀ = 2π rad/s, T<sub>b</sub> = 1/|1 − r| segundos: 10 s para r = 0,9 e 20 s para r = 0,95. Quanto mais perto da ressonância, mais lento e mais forte o pulso.</p></details></div>
 
     <div class="card"><div class="q"><div class="chal-h"><span class="n">04</span><h3>Ressonância pura</h3></div>
-      <p>Clique em <b>Ressonância</b> (r = 1, ξ = 0). A amplitude explode de uma vez? Quanto tempo leva até a ruptura?</p></div><details><summary>Ver resposta</summary><p>Não explode de uma vez: cresce linearmente com o tempo, como x ∝ (ω₀t/2)·δst. Aqui isso dá cerca de 3,1 δst por segundo, e a ruptura (30 δst) vem perto de t ≈ 10 s.</p></details></div>
+      <p>Clique em <b>Ressonância</b> (r = 1, ξ = 0). A amplitude explode de uma vez? Quanto tempo leva até a ruptura?</p></div><details><summary>Ver resposta</summary><p>Não explode de uma vez: cresce linearmente com o tempo, como x ∝ (ω₀t/2)·δst. Aqui isso dá cerca de 3,1 δst por segundo, e a ruptura (50 δst) vem perto de t ≈ 16 s.</p></details></div>
 
     <div class="card"><div class="q"><div class="chal-h"><span class="n">05</span><h3>O papel do amortecimento</h3></div>
       <p>Clique em <b>Ressonância amortecida</b> (ξ = 0,05). A amplitude cresce para sempre? Onde ela para?</p></div><details><summary>Ver resposta</summary><p>Ela se estabiliza em 1/(2ξ) = 10 δst. O amortecimento dissipa, a cada ciclo, a energia que a força injeta. Esse é o assunto da próxima aula.</p></details></div>
@@ -212,6 +214,9 @@ footer{font-size:12px;color:var(--muted)}
 
     <div class="card"><div class="q"><div class="chal-h"><span class="n">07</span><h3>Condições iniciais</h3></div>
       <p>Coloque ξ = 0,1 e r = 0,5. Rode com x₀ = 0 e depois com x₀ = 3. O começo muda? E o final?</p></div><details><summary>Ver resposta</summary><p>O começo (transiente) muda bastante, mas depois de alguns segundos as duas respostas ficam iguais: o regime permanente depende só da força, não das condições iniciais.</p></details></div>
+
+    <div class="card"><div class="q"><div class="chal-h"><span class="n">08</span><h3>Exemplo (c) da apostila</h3></div>
+      <p>Clique em <b>Exemplo (c) da apostila</b> (r = 82/80 = 1,025, ξ = 0) e use <b>Acelerar 4×</b>. Meça o pico da amplitude e o tempo entre dois “nós”. Não é ressonância… mas a amplitude é pequena?</p></div><details><summary>Ver resposta</summary><p>O pico chega a ≈ 40 δst (A<sub>máx</sub> ≈ 1/|1 − r| δst) e T<sub>b</sub> = 1/|1 − r| = 40 s no app. Na estrutura real (δst = 0,156 mm, ω₀ = 80 rad/s): pico ≈ 6,2 mm e T<sub>b</sub> = 2π/|ω − ω₀| ≈ 3,1 s. Perto da ressonância, mesmo sem coincidir, as amplitudes ficam enormes.</p></details></div>
   </div>
 
   <footer>Modelo: m ẍ + c ẋ + k x = F₀ sen(ωt), integrado numericamente (Runge–Kutta de 4.ª ordem). Material de apoio da aula de Dinâmica de Estruturas.</footer>
@@ -220,15 +225,23 @@ footer{font-size:12px;color:var(--muted)}
 <script>
 (function(){
   const W0 = 2*Math.PI;            // frequência natural [rad/s]
-  const LIMIT = 30;                // ruptura [δst]
-  const WINDOW = 20;               // janela do gráfico [s]
+  const LIMIT = 50;                // ruptura [δst]
+  const WINDOW = 20;               // janela mínima do gráfico [s]
+  const HIST = 60;                 // histórico guardado [s]
+  // janela adaptativa: no batimento, mostra pelo menos um período T_b completo
+  function win(){
+    const r = rNow(), d = Math.abs(1-r);
+    if(P.xi<0.02 && d>0.005 && d<0.3){ return Math.min(HIST, Math.max(WINDOW, Math.ceil(1.15/d/10)*10)); }
+    return WINDOW;
+  }
   const H = 1/400;                 // passo de integração [s]
   const $ = id => document.getElementById(id);
   const fmt = (v,d=2) => v.toFixed(d).replace('.',',');
+  const fmtR = r => fmt(r, Math.abs(r*100-Math.round(r*100))>1e-6 ? 3 : 2);
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
   const P = {r:0.9, xi:0, x0:0, v0:0, sweep:false};
-  const S = {t:0, x:0, v:0, th:0, hist:[], running:true, broken:false, slow:false, scale:1.2, rec:0};
+  const S = {t:0, x:0, v:0, th:0, hist:[], running:true, broken:false, slow:false, fast:false, scale:1.2, rec:0};
 
   // ---------- simulação ----------
   function rNow(){ return P.sweep ? Math.min(2.6, 0.2 + 2.4*S.t/40) : P.r; }
@@ -244,7 +257,7 @@ footer{font-size:12px;color:var(--muted)}
     S.th += w*h; S.t += h;
     if(++S.rec % 2 === 0){
       S.hist.push([S.t, S.x, Math.sin(S.th)]);
-      while(S.hist.length && S.hist[0][0] < S.t - WINDOW) S.hist.shift();
+      while(S.hist.length && S.hist[0][0] < S.t - HIST) S.hist.shift();
     }
     if(Math.abs(S.x) > LIMIT){ S.broken = true; S.running = false; $('broken').classList.add('show'); updatePlay(); }
   }
@@ -326,13 +339,14 @@ footer{font-size:12px;color:var(--muted)}
     g.clearRect(0,0,w,h);
     const pad = {l:44,r:20,t:10,b:26}, pw = w-pad.l-pad.r, ph = h-pad.t-pad.b;
     // escala com histerese
+    const WIN = win();
+    const t1 = Math.max(WIN, S.t), t0 = t1 - WIN;
     let m = 1;
-    for(const p of S.hist) m = Math.max(m, Math.abs(p[1]));
+    for(const p of S.hist) if(p[0]>=t0) m = Math.max(m, Math.abs(p[1]));
     const target = m*1.15;
     S.scale = target > S.scale ? target : S.scale + (target - S.scale)*0.02;
     const ym = S.scale;
-    const t1 = Math.max(WINDOW, S.t), t0 = t1 - WINDOW;
-    const X = t => pad.l + (t-t0)/WINDOW*pw, Y = v => pad.t + ph/2 - v/ym*ph/2;
+    const X = t => pad.l + (t-t0)/WIN*pw, Y = v => pad.t + ph/2 - v/ym*ph/2;
     axes(g,w,h,pad);
     g.font = '11px "IBM Plex Mono", monospace'; g.fillStyle = css('--muted'); g.strokeStyle = css('--line');
     // grade
@@ -343,7 +357,8 @@ footer{font-size:12px;color:var(--muted)}
       g.fillText(fmt(v, yt<1?1:0), pad.l-6, Y(v)+4);
     }
     g.textAlign='center';
-    for(let t=Math.ceil(t0/2)*2; t<=t1; t+=2){ g.fillText(Math.round(t)+' s', X(t), h-8); }
+    const dt_ = WIN>30 ? 5 : 2;
+    for(let t=Math.ceil(t0/dt_)*dt_; t<=t1; t+=dt_){ g.fillText(Math.round(t)+' s', X(t), h-8); }
     // curvas
     g.save(); g.beginPath(); g.rect(pad.l,pad.t,pw,ph); g.clip();
     g.setLineDash([5,4]); g.strokeStyle = css('--force'); g.lineWidth = 1.4; g.beginPath();
@@ -403,11 +418,11 @@ footer{font-size:12px;color:var(--muted)}
   // ---------- textos ----------
   function updateText(){
     const r = rNow(), xi = P.xi, a = amp(r,xi), phi = phase(r,xi);
-    $('rOut').textContent = fmt(r) + (P.sweep ? ' ↗' : '');
+    $('rOut').textContent = fmtR(r) + (P.sweep ? ' ↗' : '');
     $('xiOut').textContent = fmt(xi,3);
     $('x0Out').textContent = fmt(P.x0,1) + ' δst';
     $('v0Out').textContent = fmt(P.v0,1);
-    $('eq').innerHTML = 'ẍ + 2·<i>' + fmt(xi,3) + '</i>·ω₀·ẋ + ω₀²·x = (F₀/m)·sen(<b>' + fmt(r) + '</b>·ω₀·t)  &nbsp;&nbsp;com ω₀ = 2π rad/s';
+    $('eq').innerHTML = 'ẍ + 2·<i>' + fmt(xi,3) + '</i>·ω₀·ẋ + ω₀²·x = (F₀/m)·sen(<b>' + fmtR(r) + '</b>·ω₀·t)  &nbsp;&nbsp;com ω₀ = 2π rad/s';
     $('roA').textContent = (xi===0 && Math.abs(r-1)<0.005) ? '∞' : fmt(a, a>=10?1:2);
     $('roPhi').textContent = (xi===0 && Math.abs(r-1)<0.005) ? 'indef.' : Math.round(xi===0 ? (r<1?0:180) : phi) + '°';
     $('roTb').textContent = (xi<0.02 && Math.abs(1-r)>0.005 && Math.abs(1-r)<0.3) ? fmt(1/Math.abs(1-r),1)+' s' : '–';
@@ -439,7 +454,8 @@ footer{font-size:12px;color:var(--muted)}
   function updatePlay(){ $('play').textContent = S.running ? 'Pausar' : 'Continuar'; }
   $('play').onclick = () => { if(S.broken){ reset(); return; } S.running = !S.running; updatePlay(); };
   $('reset').onclick = reset; $('brokenReset').onclick = reset;
-  $('speed').onclick = () => { S.slow = !S.slow; $('speed').setAttribute('aria-pressed', S.slow); };
+  $('speed').onclick = () => { S.slow = !S.slow; if(S.slow){ S.fast=false; $('fast').setAttribute('aria-pressed', false); } $('speed').setAttribute('aria-pressed', S.slow); };
+  $('fast').onclick = () => { S.fast = !S.fast; if(S.fast){ S.slow=false; $('speed').setAttribute('aria-pressed', false); } $('fast').setAttribute('aria-pressed', S.fast); };
   $('r').oninput = e => { P.sweep=false; P.r=+e.target.value; updateText(); };
   $('xi').oninput = e => { P.xi=+e.target.value; updateText(); };
   $('x0').oninput = e => { P.x0=+e.target.value; reset(); updateText(); };
@@ -457,7 +473,7 @@ footer{font-size:12px;color:var(--muted)}
     if(last===null) last=ts;
     let dt = Math.min(0.05,(ts-last)/1000); last=ts;
     if(S.running){
-      dt *= S.slow ? 0.25 : 1;
+      dt *= S.slow ? 0.25 : (S.fast ? 4 : 1);
       const n = Math.round(dt/H);
       for(let i=0;i<n && !S.broken;i++) step(H);
       if(P.sweep) $('r').value = rNow();
