@@ -2,18 +2,20 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Laboratório de Vibração Forçada</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="author" content="Prof. Rene Quispe Rodriguez">
+<meta name="description" content="Laboratório de Vibração Forçada — simulador de excitação harmônica de sistemas de 1 GL. Dinâmica de Estruturas, Prof. Rene Quispe Rodriguez.">
+<meta name="theme-color" content="#1f4e79">
+<title>Laboratório de Vibração Forçada · Prof. Rene Quispe Rodriguez</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* Layout: bancada de laboratório — animação + gráfico no tempo à esquerda, controles e curva de amplificação à direita, desafios embaixo */
 :root{
-  --bg:#f3f5f8; --panel:#ffffff; --ink:#18212d; --muted:#5b6778; --line:#d9dfe7;
-  --accent:#1f4e79;   /* resposta x(t), estrutura */
-  --force:#d66c20;    /* força externa */
-  --ok:#2e7d50; --warn:#b07a12; --crit:#b02a30;
+  --bg:#eef2f7; --panel:#ffffff; --ink:#18212d; --muted:#5b6778; --line:#d9dfe7;
+  --accent:#1f4e79; --accent2:#2f6aa3;
+  --force:#d66c20;
+  --ok:#2e7d50; --warn:#b07a12; --crit:#b02a30; --inert:#5b4fa8;
   --soft:#e6edf5;
   --display:"IBM Plex Sans Condensed","Arial Narrow",sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -21,205 +23,281 @@
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0f141b; --panel:#171e28; --ink:#e6ebf2; --muted:#9aa6b6; --line:#2a3441;
-    --accent:#6fa8dc; --force:#f0954a; --ok:#5cbf86; --warn:#e0b04a; --crit:#ef6b70; --soft:#1d2836;
+  :root{
+    --bg:#0d1218; --panel:#161d27; --ink:#e6ebf2; --muted:#9aa6b6; --line:#2a3441;
+    --accent:#6fa8dc; --accent2:#8bbbe6; --force:#f0954a; --ok:#5cbf86; --warn:#e0b04a; --crit:#ef6b70; --inert:#a99cf0; --soft:#1d2836;
     color-scheme:dark;
   }
 }
-:root[data-theme="dark"]{
-  --bg:#0f141b; --panel:#171e28; --ink:#e6ebf2; --muted:#9aa6b6; --line:#2a3441;
-  --accent:#6fa8dc; --force:#f0954a; --ok:#5cbf86; --warn:#e0b04a; --crit:#ef6b70; --soft:#1d2836;
-  color-scheme:dark;
-}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
-.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 40px;display:grid;gap:18px}
-header{display:grid;gap:4px}
-header .kicker{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.04em}
-h1{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.1;margin:0;text-wrap:balance}
-header p{margin:0;color:var(--muted);max-width:70ch}
-.eq{font-family:var(--mono);font-size:14px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;overflow-x:auto;white-space:nowrap}
-.eq b{color:var(--force);font-weight:500}
-.eq i{color:var(--accent);font-style:normal}
-.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:18px;align-items:start}
-@media (max-width:920px){.grid{grid-template-columns:1fr}}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:10px}
-.panel h2{font-family:var(--display);font-weight:600;font-size:17px;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px 32px;display:grid;gap:16px}
+
+/* ---------- cabeçalho ---------- */
+.hero{margin:0 -16px;padding:22px 20px 20px;background:linear-gradient(135deg,#163a5c 0%,#1f4e79 55%,#2f6aa3 100%);color:#fff;position:relative;overflow:hidden}
+.hero svg.waves{position:absolute;right:-20px;bottom:-10px;width:min(520px,80%);height:auto;opacity:.22;pointer-events:none}
+.hero-in{max-width:1240px;margin:0 auto;position:relative;display:grid;gap:6px}
+.kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;opacity:.8;text-transform:uppercase}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,5.5vw,36px);line-height:1.05;margin:0}
+.author{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 12px 3px 4px;justify-self:start}
+.author .av{width:24px;height:24px;border-radius:50%;background:#fff;color:#1f4e79;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:12px}
+.hero p{margin:4px 0 0;max-width:70ch;opacity:.9;font-size:14.5px}
+
+/* ---------- equação ---------- */
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:grid;gap:6px}
+.eq .l1{font-family:var(--mono);font-size:clamp(13px,3.6vw,16px);white-space:nowrap;overflow-x:auto}
+.eq .l2{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--mono);font-size:12.5px;padding:2px 9px;border-radius:999px;background:var(--soft);white-space:nowrap}
+.tag.r{color:var(--force)} .tag.xi{color:var(--accent)}
+.eq .l1 .fr{color:var(--force)} .eq .l1 .dp{color:var(--accent)}
+
+/* ---------- grade principal ---------- */
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:16px;align-items:start;
+  grid-template-areas:"sys ctl" "time amp" "stat amp"}
+#p-sys{grid-area:sys} #p-ctl{grid-area:ctl} #p-time{grid-area:time} #p-stat{grid-area:stat} #p-amp{grid-area:amp}
+@media (max-width:920px){
+  .grid{grid-template-columns:1fr;grid-template-areas:"sys" "time" "stat" "ctl" "amp"}
+}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:10px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.panel h2{font-family:var(--display);font-weight:600;font-size:18px;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.panel h2 .ic{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--soft);color:var(--accent);margin-right:6px;vertical-align:-5px}
 .panel h2 small{font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
 canvas{width:100%;display:block}
-#anim{height:170px}
-#timeplot{height:250px}
-#ampplot{height:230px}
-#phaseplot{height:110px}
-.col{display:grid;gap:18px}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
-.legend span::before{content:"";display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;background:var(--c)}
-.legend .dash::before{background:repeating-linear-gradient(90deg,var(--c) 0 5px,transparent 5px 9px)}
-.controls{display:grid;gap:12px}
-.ctl{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
-.ctl label{font-weight:500;font-size:14px}
-.ctl output{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--accent);min-width:7ch;text-align:right}
-.ctl input{grid-column:1/-1;width:100%;accent-color:var(--accent)}
-.ctl .hint{grid-column:1/-1;font-size:12px;color:var(--muted)}
+#anim{height:180px}
+#timeplot{height:260px}
+#ampplot{height:220px}
+#phaseplot{height:100px}
+#phasor{width:118px;height:118px;flex:none;margin:0 auto}
+@media (max-width:600px){
+  #anim{height:150px} #timeplot{height:220px} #ampplot{height:190px}
+  .wrap{padding:0 10px 28px;gap:12px} .hero{margin:0 -10px}
+  .panel{padding:12px;border-radius:10px}
+}
+
+/* ---------- medidor de amplitude ---------- */
+.meter{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;font-size:12.5px;color:var(--muted)}
+.meter .bar{height:10px;border-radius:999px;background:linear-gradient(90deg,var(--ok) 0 40%,var(--warn) 40% 75%,var(--crit) 75% 100%);opacity:.25;position:relative}
+.meter .track{position:relative;height:10px}
+.meter .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--ok);width:0;transition:width .12s linear,background .2s}
+.meter b{font-family:var(--mono);font-weight:500;color:var(--ink);min-width:8ch;text-align:right}
+
+/* ---------- botões ---------- */
 .btns{display:flex;flex-wrap:wrap;gap:8px}
-button{font-family:var(--body);font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+button{font-family:var(--body);font-size:14px;font-weight:500;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer;min-height:38px;touch-action:manipulation}
 button:hover{border-color:var(--accent)}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button.primary{background:var(--accent);color:var(--panel);border-color:var(--accent)}
 button[aria-pressed="true"]{background:var(--accent);color:var(--panel);border-color:var(--accent)}
-.status{display:grid;gap:8px;border-left:4px solid var(--c,var(--accent));padding:10px 12px;background:var(--soft);border-radius:0 6px 6px 0}
+.presets-h{font-size:13px;color:var(--muted);margin-top:2px}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+@media (max-width:600px){
+  .presets{gap:6px}
+  .presets button{font-size:13px;padding:5px 11px;min-height:34px}
+  .hero svg.waves{opacity:.12;width:90%}
+}
+.presets button{display:inline-flex;align-items:center;gap:7px;background:var(--panel)}
+.presets button::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c,var(--accent))}
+.presets button.on{border-color:var(--c,var(--accent));box-shadow:inset 0 0 0 1px var(--c,var(--accent))}
+
+/* ---------- controles ---------- */
+.controls{display:grid;gap:14px}
+.ctl{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center}
+.ctl label{font-weight:500;font-size:14px}
+.ctl .num{display:flex;align-items:center;gap:4px}
+.ctl .num input{font-family:var(--mono);font-size:15px;width:7.2ch;text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--accent)}
+.ctl .num input.bad{border-color:var(--crit);color:var(--crit)}
+.ctl .num span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.ctl .hint{grid-column:1/-1;font-size:12px;color:var(--muted)}
+.ctl input[type=range]{grid-column:1/-1}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;--p:50%;--trk:linear-gradient(90deg,var(--accent) 0 var(--p),var(--line) var(--p) 100%)}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:999px;background:var(--trk)}
+input[type=range]::-moz-range-track{height:8px;border-radius:999px;background:var(--trk)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-8px;border-radius:50%;background:var(--panel);border:3px solid var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--panel);border:3px solid var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+#r{--trk:linear-gradient(90deg,var(--ok) 0 23.7%,var(--warn) 23.7% 31%,var(--crit) 31% 32.9%,var(--warn) 32.9% 40.3%,var(--inert) 40.3% 100%)}
+#r::-webkit-slider-thumb{border-color:var(--force)} #r::-moz-range-thumb{border-color:var(--force)}
+.zones{grid-column:1/-1;position:relative;height:16px;font-size:10.5px;color:var(--muted);font-family:var(--mono)}
+.zones span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+
+/* ---------- status ---------- */
+.status{display:grid;gap:8px;border-left:4px solid var(--c,var(--accent));padding:10px 12px;background:var(--soft);border-radius:0 8px 8px 0}
 .status .pill{justify-self:start;font-family:var(--mono);font-size:12px;font-weight:500;padding:2px 10px;border-radius:999px;background:var(--c,var(--accent));color:var(--panel)}
 .status p{margin:0;font-size:14px}
-.readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.ro{background:var(--soft);border-radius:6px;padding:8px 10px}
+.statrow{display:flex;gap:12px;align-items:center}
+.readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;flex:1}
+.ro{background:var(--soft);border-radius:8px;padding:8px 10px;border-top:3px solid var(--c,var(--accent))}
 .ro .k{font-size:12px;color:var(--muted)}
-.ro .v{font-family:var(--mono);font-size:18px;font-variant-numeric:tabular-nums}
-.challenges{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:4px;align-content:start}
-details p{margin:0;font-size:14px}
-details .q{display:grid;gap:8px}
-details .q p{margin:0}
-summary{cursor:pointer;font-weight:500;color:var(--accent);font-size:14px;margin-top:6px}
-details[open] summary{margin-bottom:6px}
-.chal-h{display:flex;gap:8px;align-items:baseline}
-.chal-h .n{font-family:var(--mono);font-size:12px;color:var(--muted)}
-.chal-h h3{font-family:var(--display);font-weight:600;font-size:16px;margin:0}
-.secth{font-family:var(--display);font-weight:600;font-size:20px;margin:6px 0 0}
+.ro .v{font-family:var(--mono);font-size:19px;font-variant-numeric:tabular-nums}
+@media (max-width:420px){ .statrow{flex-direction:column-reverse;align-items:stretch} #phasor{align-self:center} .ro .v{font-size:17px} }
+.phasor-l{font-size:11.5px;color:var(--muted);text-align:center}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;background:var(--c)}
+.legend .dash::before{background:repeating-linear-gradient(90deg,var(--c) 0 5px,transparent 5px 9px)}
+.legend .dot::before{width:10px;height:10px;border-radius:50%}
+
+/* ---------- ruptura ---------- */
 .overlay{position:relative}
-.broken{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:12px;background:color-mix(in srgb,var(--panel) 82%,transparent);border-radius:6px}
+.broken{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:12px;background:color-mix(in srgb,var(--panel) 85%,transparent);border-radius:8px}
 .broken.show{display:flex}
-.broken div{display:grid;gap:6px;max-width:44ch}
-.broken strong{font-family:var(--display);font-size:22px;color:var(--crit)}
-footer{font-size:12px;color:var(--muted)}
+.broken div{display:grid;gap:6px;max-width:44ch;font-size:14px}
+.broken strong{font-family:var(--display);font-size:24px;color:var(--crit)}
+
+/* ---------- desafios ---------- */
+.secth{font-family:var(--display);font-weight:600;font-size:21px;margin:6px 0 0}
+.challenges{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:10px;padding:12px 14px;display:grid;gap:6px;align-content:start}
+.card p{margin:0;font-size:14px}
+.chal-h{display:flex;gap:8px;align-items:center}
+.chal-h .n{font-family:var(--mono);font-size:12px;color:var(--panel);background:var(--c);border-radius:6px;padding:1px 7px}
+.chal-h h3{font-family:var(--display);font-weight:600;font-size:17px;margin:0}
+.card .go{justify-self:start;font-size:13px;min-height:32px;padding:4px 12px}
+summary{cursor:pointer;font-weight:500;color:var(--accent);font-size:14px}
+details[open] summary{margin-bottom:6px}
+footer{font-size:12.5px;color:var(--muted);display:grid;gap:2px;border-top:1px solid var(--line);padding-top:12px}
+footer b{color:var(--ink);font-weight:600}
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="kicker">DINÂMICA DE ESTRUTURAS · CAP. 5 · EXCITAÇÃO HARMÔNICA DE SISTEMAS DE 1 GL</div>
-    <h1>Laboratório de Vibração Forçada</h1>
-    <p>Mude o ritmo da força e o amortecimento e veja, ao vivo, o que acontece com a massa. A frequência natural está fixa em ω₀ = 2π rad/s (1 oscilação por segundo), e os deslocamentos são medidos em múltiplos do deslocamento estático δ<sub>st</sub> = F₀/k.</p>
+  <header class="hero">
+    <svg class="waves" viewBox="0 0 520 160" aria-hidden="true"><path d="M0 80 Q 32.5 10 65 80 T 130 80 T 195 80 T 260 80 T 325 80 T 390 80 T 455 80 T 520 80" fill="none" stroke="#fff" stroke-width="3"/><path d="M0 80 Q 20 50 40 80 T 80 80 T 120 80 T 160 80 T 200 80 T 240 80 T 280 80 T 320 80 T 360 80 T 400 80 T 440 80 T 480 80 T 520 80" fill="none" stroke="#f0954a" stroke-width="2.5" stroke-dasharray="7 6"/></svg>
+    <div class="hero-in">
+      <div class="kicker">Dinâmica de Estruturas · Excitação harmônica de sistemas de 1 GL</div>
+      <h1>Laboratório de Vibração Forçada</h1>
+      <span class="author"><span class="av">RQ</span>Prof. Rene Quispe Rodriguez</span>
+      <p>Mude o ritmo da força e o amortecimento e veja, ao vivo, o que acontece com a massa. A frequência natural é fixa em ω₀ = 2π rad/s (1 oscilação por segundo), e os deslocamentos são medidos em múltiplos do deslocamento estático δ<sub>st</sub> = F₀/k.</p>
+    </div>
   </header>
 
-  <div class="eq" id="eq" aria-live="polite"></div>
-
-  <div class="grid">
-    <div class="col">
-      <section class="panel">
-        <h2>O sistema <small id="clock">t = 0,0 s</small></h2>
-        <div class="overlay">
-          <canvas id="anim" aria-label="Animação do sistema massa-mola-amortecedor"></canvas>
-          <div class="broken" id="broken"><div><strong>Ruptura!</strong><span>A amplitude passou de 50 vezes o deslocamento estático. Numa estrutura real, algo teria escoado ou rompido antes disso.</span><span><button class="primary" id="brokenReset">Reiniciar</button></span></div></div>
-        </div>
-        <div class="btns">
-          <button class="primary" id="play">Pausar</button>
-          <button id="reset">Reiniciar</button>
-          <button id="speed" aria-pressed="false">Câmera lenta</button>
-          <button id="fast" aria-pressed="false">Acelerar 4×</button>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>O que está acontecendo</h2>
-        <div class="status" id="status"><span class="pill" id="pill"></span><p id="explain"></p></div>
-        <div class="readouts">
-          <div class="ro"><div class="k">Amplificação</div><div class="v" id="roA">–</div></div>
-          <div class="ro"><div class="k">Fase φ</div><div class="v" id="roPhi">–</div></div>
-          <div class="ro"><div class="k">Batimento T<sub>b</sub></div><div class="v" id="roTb">–</div></div>
-        </div>
-      </section>
-      <section class="panel">
-        <h2>Resposta no tempo <small id="scaleinfo">escala: ±1,2 δst</small></h2>
-        <canvas id="timeplot" aria-label="Gráfico do deslocamento ao longo do tempo"></canvas>
-        <div class="legend">
-          <span style="--c:var(--accent)">deslocamento x(t)/δst</span>
-          <span class="dash" style="--c:var(--force)">força F(t)/k</span>
-        </div>
-      </section>
-    </div>
-
-    <div class="col">
-      <section class="panel">
-        <h2>Controles</h2>
-        <div class="controls">
-          <div class="ctl">
-            <label for="r">Razão de frequências r = ω/ω₀</label><output id="rOut" for="r"></output>
-            <input type="range" id="r" min="0.05" max="3" step="0.005" value="0.9">
-            <span class="hint">Quão rápido a força empurra, comparado ao ritmo natural da estrutura.</span>
-          </div>
-          <div class="ctl">
-            <label for="xi">Amortecimento ξ</label><output id="xiOut" for="xi"></output>
-            <input type="range" id="xi" min="0" max="0.5" step="0.005" value="0">
-            <span class="hint">ξ = 0 é o caso estudado nesta aula (sem amortecimento).</span>
-          </div>
-          <div class="ctl">
-            <label for="x0">Deslocamento inicial x₀</label><output id="x0Out" for="x0"></output>
-            <input type="range" id="x0" min="-3" max="3" step="0.1" value="0">
-          </div>
-          <div class="ctl">
-            <label for="v0">Velocidade inicial ẋ₀</label><output id="v0Out" for="v0"></output>
-            <input type="range" id="v0" min="-15" max="15" step="0.5" value="0">
-            <span class="hint">Mudar x₀ ou ẋ₀ reinicia a simulação.</span>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Cenários prontos</div>
-          <div class="btns" id="presets">
-            <button data-r="0.3" data-xi="0">Força lenta</button>
-            <button data-r="0.9" data-xi="0">Batimento</button>
-            <button data-r="1" data-xi="0">Ressonância</button>
-            <button data-r="1" data-xi="0.05">Ressonância amortecida</button>
-            <button data-r="2.5" data-xi="0">Força rápida</button>
-            <button data-sweep="1">Máquina de lavar</button>
-            <button data-r="1.025" data-xi="0">Exemplo (c) da apostila</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>Fator de amplificação <small>regime permanente</small></h2>
-        <canvas id="ampplot" aria-label="Curva do fator de amplificação em função de r"></canvas>
-        <canvas id="phaseplot" aria-label="Curva do ângulo de fase em função de r"></canvas>
-        <div class="legend">
-          <span style="--c:var(--accent)">ξ atual</span>
-          <span class="dash" style="--c:var(--muted)">ξ = 0</span>
-        </div>
-      </section>
-
-    </div>
+  <div class="eq" aria-live="polite">
+    <div class="l1">ẍ + 2<span class="dp">ξ</span>ω₀ẋ + ω₀²x = (F₀/m)·sen(<span class="fr">ω</span>t)</div>
+    <div class="l2"><span class="tag r" id="tagR"></span><span class="tag xi" id="tagXi"></span><span class="tag">ω₀ = 2π rad/s</span></div>
   </div>
+
+  <main class="grid">
+    <section class="panel" id="p-sys">
+      <h2><span><span class="ic">◧</span>O sistema</span><small id="clock">t = 0,0 s</small></h2>
+      <div class="overlay">
+        <canvas id="anim" aria-label="Animação do sistema massa-mola-amortecedor"></canvas>
+        <div class="broken" id="broken"><div><strong>Ruptura!</strong><span>A amplitude passou de 50 vezes o deslocamento estático. Numa estrutura real, algo teria escoado ou rompido antes disso.</span><span><button class="primary" id="brokenReset">Reiniciar</button></span></div></div>
+      </div>
+      <div class="meter" title="Amplitude recente comparada ao limite de ruptura">
+        <span>amplitude</span>
+        <div class="track"><div class="bar" style="position:absolute;inset:0"></div><div class="fill" id="mfill"></div></div>
+        <b id="mval">0,0 δst</b>
+      </div>
+      <div class="btns">
+        <button class="primary" id="play">Pausar</button>
+        <button id="reset">Reiniciar</button>
+        <button id="speed" aria-pressed="false">Câmera lenta</button>
+        <button id="fast" aria-pressed="false">Acelerar 4×</button>
+      </div>
+      <div class="presets-h">Cenários prontos</div>
+      <div class="presets" id="presets">
+        <button data-r="0.3" data-xi="0" style="--c:var(--ok)">Força lenta</button>
+        <button data-r="0.9" data-xi="0" style="--c:var(--warn)">Batimento</button>
+        <button data-r="1" data-xi="0" style="--c:var(--crit)">Ressonância</button>
+        <button data-r="1" data-xi="0.05" style="--c:var(--accent)">Ressonância amortecida</button>
+        <button data-r="2.5" data-xi="0" style="--c:var(--inert)">Força rápida</button>
+        <button data-sweep="1" style="--c:var(--force)">Máquina de lavar</button>
+      </div>
+    </section>
+
+    <section class="panel" id="p-time">
+      <h2><span><span class="ic">∿</span>Resposta no tempo</span><small id="scaleinfo">escala: ±1,2 δst</small></h2>
+      <canvas id="timeplot" aria-label="Gráfico do deslocamento ao longo do tempo"></canvas>
+      <div class="legend">
+        <span style="--c:var(--accent)">deslocamento x(t)/δst</span>
+        <span class="dash" style="--c:var(--force)">força F(t)/k</span>
+        <span class="dash" style="--c:var(--crit)">ruptura (±50 δst)</span>
+      </div>
+    </section>
+
+    <section class="panel" id="p-stat">
+      <h2><span><span class="ic">◉</span>O que está acontecendo</span></h2>
+      <div class="status" id="status"><span class="pill" id="pill"></span><p id="explain"></p></div>
+      <div class="statrow">
+        <div class="readouts">
+          <div class="ro" id="roAbox"><div class="k">Amplificação</div><div class="v" id="roA">–</div></div>
+          <div class="ro" style="--c:var(--accent)"><div class="k">Fase φ</div><div class="v" id="roPhi">–</div></div>
+          <div class="ro" style="--c:var(--warn)"><div class="k">Batimento T<sub>b</sub></div><div class="v" id="roTb">–</div></div>
+        </div>
+        <div><canvas id="phasor" aria-label="Fasores da força e da resposta"></canvas><div class="phasor-l">fasores: <span style="color:var(--force)">força</span> × <span style="color:var(--accent)">resposta</span></div></div>
+      </div>
+    </section>
+
+    <section class="panel" id="p-ctl">
+      <h2><span><span class="ic">⚙</span>Controles</span><small>digite ou arraste</small></h2>
+      <div class="controls">
+        <div class="ctl">
+          <label for="rN">Razão de frequências r = ω/ω₀</label>
+          <div class="num"><input id="rN" type="text" inputmode="decimal" autocomplete="off" aria-label="valor de r"></div>
+          <input type="range" id="r" min="0.05" max="3" step="0.005" value="0.9" aria-label="r">
+          <div class="zones" aria-hidden="true"><span style="left:10%">rigidez</span><span style="left:32%;color:var(--crit)">r = 1</span><span style="left:72%">inércia</span></div>
+          <span class="hint">Quão rápido a força empurra, comparado ao ritmo natural da estrutura (0,05 a 3).</span>
+        </div>
+        <div class="ctl">
+          <label for="xiN">Amortecimento ξ</label>
+          <div class="num"><input id="xiN" type="text" inputmode="decimal" autocomplete="off" aria-label="valor de ξ"></div>
+          <input type="range" id="xi" min="0" max="0.5" step="0.005" value="0" aria-label="ξ">
+          <span class="hint">ξ = 0 é o caso estudado nesta aula (sem amortecimento).</span>
+        </div>
+        <div class="ctl">
+          <label for="x0N">Deslocamento inicial x₀</label>
+          <div class="num"><input id="x0N" type="text" inputmode="decimal" autocomplete="off" aria-label="valor de x0"><span>δst</span></div>
+          <input type="range" id="x0" min="-3" max="3" step="0.1" value="0" aria-label="x0">
+        </div>
+        <div class="ctl">
+          <label for="v0N">Velocidade inicial ẋ₀</label>
+          <div class="num"><input id="v0N" type="text" inputmode="decimal" autocomplete="off" aria-label="valor de v0"></div>
+          <input type="range" id="v0" min="-15" max="15" step="0.5" value="0" aria-label="v0">
+          <span class="hint">Digitar um valor (e confirmar) reinicia a simulação a partir do repouso. Use vírgula ou ponto.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="p-amp">
+      <h2><span><span class="ic">⌒</span>Fator de amplificação</span><small>regime permanente</small></h2>
+      <canvas id="ampplot" aria-label="Curva do fator de amplificação em função de r"></canvas>
+      <canvas id="phaseplot" aria-label="Curva do ângulo de fase em função de r"></canvas>
+      <div class="legend">
+        <span style="--c:var(--accent)">ξ atual</span>
+        <span class="dash" style="--c:var(--muted)">ξ = 0</span>
+        <span class="dot" style="--c:var(--force)">onde você está</span>
+      </div>
+    </section>
+  </main>
 
   <h2 class="secth">Desafios</h2>
   <div class="challenges">
-    <div class="card"><div class="q"><div class="chal-h"><span class="n">01</span><h3>Quem manda é a mola</h3></div>
-      <p>Clique em <b>Força lenta</b> (r = 0,3). A massa se move junto com a força ou contra ela? A amplitude fica perto de quanto?</p></div><details><summary>Ver resposta</summary><p>Junto (em fase, φ = 0°), com amplitude ≈ 1,1 δst. A força é lenta o bastante para a mola acompanhar: a resposta é quase a estática.</p></details></div>
+    <div class="card" style="--c:var(--warn)"><div class="chal-h"><span class="n">01</span><h3>Batimento</h3></div>
+      <p>Com ξ = 0, use r = 0,9 e depois r = 0,95. Meça no gráfico o tempo entre dois “nós” do batimento. Confere com T<sub>b</sub> = 2π/|ω₀ − ω|?</p>
+      <button class="go" data-r="0.9" data-xi="0">Testar r = 0,9</button>
+      <details><summary>Ver resposta</summary><p>Como ω₀ = 2π rad/s, T<sub>b</sub> = 1/|1 − r| segundos: 10 s para r = 0,9 e 20 s para r = 0,95. Quanto mais perto da ressonância, mais lento e mais forte o pulso.</p></details></div>
 
-    <div class="card"><div class="q"><div class="chal-h"><span class="n">02</span><h3>Quem manda é a inércia</h3></div>
-      <p>Clique em <b>Força rápida</b> (r = 2,5). Compare as curvas azul e laranja. O que mudou?</p></div><details><summary>Ver resposta</summary><p>A massa fica em oposição à força (φ = 180°) e se move bem menos que o deslocamento estático (≈ 0,19 δst). Ela “não dá conta” de acompanhar o vaivém. Essa é a ideia do isolamento de vibrações.</p></details></div>
+    <div class="card" style="--c:var(--crit)"><div class="chal-h"><span class="n">02</span><h3>Ressonância</h3></div>
+      <p>Com r = 1 e ξ = 0, a amplitude explode de uma vez? Quanto tempo leva até a ruptura?</p>
+      <button class="go" data-r="1" data-xi="0">Testar r = 1</button>
+      <details><summary>Ver resposta</summary><p>Não explode de uma vez: cresce linearmente com o tempo, como x ∝ (ω₀t/2)·δst. Aqui isso dá cerca de 3,1 δst por segundo, e a ruptura (50 δst) vem perto de t ≈ 16 s.</p></details></div>
 
-    <div class="card"><div class="q"><div class="chal-h"><span class="n">03</span><h3>Medindo o batimento</h3></div>
-      <p>Com ξ = 0, use r = 0,9 e depois r = 0,95. Meça no gráfico o tempo entre dois “nós” do batimento. Confere com T<sub>b</sub> = 2π/|ω₀ − ω|?</p></div><details><summary>Ver resposta</summary><p>Como ω₀ = 2π rad/s, T<sub>b</sub> = 1/|1 − r| segundos: 10 s para r = 0,9 e 20 s para r = 0,95. Quanto mais perto da ressonância, mais lento e mais forte o pulso.</p></details></div>
+    <div class="card" style="--c:var(--accent)"><div class="chal-h"><span class="n">03</span><h3>O papel do amortecimento</h3></div>
+      <p>Agora com r = 1 e ξ = 0,05. A amplitude cresce para sempre? Onde ela para?</p>
+      <button class="go" data-r="1" data-xi="0.05">Testar ξ = 0,05</button>
+      <details><summary>Ver resposta</summary><p>Ela se estabiliza em 1/(2ξ) = 10 δst. O amortecimento dissipa, a cada ciclo, a energia que a força injeta. Esse é o assunto da próxima aula.</p></details></div>
 
-    <div class="card"><div class="q"><div class="chal-h"><span class="n">04</span><h3>Ressonância pura</h3></div>
-      <p>Clique em <b>Ressonância</b> (r = 1, ξ = 0). A amplitude explode de uma vez? Quanto tempo leva até a ruptura?</p></div><details><summary>Ver resposta</summary><p>Não explode de uma vez: cresce linearmente com o tempo, como x ∝ (ω₀t/2)·δst. Aqui isso dá cerca de 3,1 δst por segundo, e a ruptura (50 δst) vem perto de t ≈ 16 s.</p></details></div>
-
-    <div class="card"><div class="q"><div class="chal-h"><span class="n">05</span><h3>O papel do amortecimento</h3></div>
-      <p>Clique em <b>Ressonância amortecida</b> (ξ = 0,05). A amplitude cresce para sempre? Onde ela para?</p></div><details><summary>Ver resposta</summary><p>Ela se estabiliza em 1/(2ξ) = 10 δst. O amortecimento dissipa, a cada ciclo, a energia que a força injeta. Esse é o assunto da próxima aula.</p></details></div>
-
-    <div class="card"><div class="q"><div class="chal-h"><span class="n">06</span><h3>A máquina de lavar</h3></div>
-      <p>Clique em <b>Máquina de lavar</b>: a frequência da força sobe aos poucos de r = 0,2 até r = 2,6. Observe o marcador na curva de amplificação. Quando a máquina “dança”?</p></div><details><summary>Ver resposta</summary><p>Só enquanto r passa perto de 1. Depois a resposta diminui, mesmo com o tambor girando mais rápido, porque o sistema entra na região dominada pela inércia.</p></details></div>
-
-    <div class="card"><div class="q"><div class="chal-h"><span class="n">07</span><h3>Condições iniciais</h3></div>
-      <p>Coloque ξ = 0,1 e r = 0,5. Rode com x₀ = 0 e depois com x₀ = 3. O começo muda? E o final?</p></div><details><summary>Ver resposta</summary><p>O começo (transiente) muda bastante, mas depois de alguns segundos as duas respostas ficam iguais: o regime permanente depende só da força, não das condições iniciais.</p></details></div>
-
-    <div class="card"><div class="q"><div class="chal-h"><span class="n">08</span><h3>Exemplo (c) da apostila</h3></div>
-      <p>Clique em <b>Exemplo (c) da apostila</b> (r = 82/80 = 1,025, ξ = 0) e use <b>Acelerar 4×</b>. Meça o pico da amplitude e o tempo entre dois “nós”. Não é ressonância… mas a amplitude é pequena?</p></div><details><summary>Ver resposta</summary><p>O pico chega a ≈ 40 δst (A<sub>máx</sub> ≈ 1/|1 − r| δst) e T<sub>b</sub> = 1/|1 − r| = 40 s no app. Na estrutura real (δst = 0,156 mm, ω₀ = 80 rad/s): pico ≈ 6,2 mm e T<sub>b</sub> = 2π/|ω − ω₀| ≈ 3,1 s. Perto da ressonância, mesmo sem coincidir, as amplitudes ficam enormes.</p></details></div>
+    <div class="card" style="--c:var(--force)"><div class="chal-h"><span class="n">04</span><h3>A máquina de lavar</h3></div>
+      <p>A frequência da força sobe aos poucos de r = 0,2 até r = 2,6. Observe o ponto na curva de amplificação. Quando a máquina “dança”?</p>
+      <button class="go" data-sweep="1">Testar a máquina</button>
+      <details><summary>Ver resposta</summary><p>Só enquanto r passa perto de 1. Depois a resposta diminui, mesmo com o tambor girando mais rápido, porque o sistema entra na região dominada pela inércia.</p></details></div>
   </div>
 
-  <footer>Modelo: m ẍ + c ẋ + k x = F₀ sen(ωt), integrado numericamente (Runge–Kutta de 4.ª ordem). Material de apoio da aula de Dinâmica de Estruturas.</footer>
+  <footer>
+    <div>Desenvolvido por <b>Prof. Rene Quispe Rodriguez</b> · Material de apoio da disciplina Dinâmica de Estruturas · versão 2.0</div>
+    <div>Modelo: m ẍ + c ẋ + k x = F₀ sen(ωt), integrado numericamente (Runge–Kutta de 4.ª ordem).</div>
+  </footer>
 </div>
 
 <script>
@@ -228,20 +306,22 @@ footer{font-size:12px;color:var(--muted)}
   const LIMIT = 50;                // ruptura [δst]
   const WINDOW = 20;               // janela mínima do gráfico [s]
   const HIST = 60;                 // histórico guardado [s]
+  const H = 1/400;                 // passo de integração [s]
+  const $ = id => document.getElementById(id);
+  const fmt = (v,d=2) => v.toFixed(d).replace('.',',');
+  const fmtR = r => fmt(r, Math.abs(r*100-Math.round(r*100))>1e-6 ? 3 : 2);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const clamp = (v,a,b) => Math.min(b,Math.max(a,v));
+
+  const P = {r:0.9, xi:0, x0:0, v0:0, sweep:false};
+  const S = {t:0, x:0, v:0, th:0, hist:[], running:true, broken:false, slow:false, fast:false, scale:1.2, rec:0};
+
   // janela adaptativa: no batimento, mostra pelo menos um período T_b completo
   function win(){
     const r = rNow(), d = Math.abs(1-r);
     if(P.xi<0.02 && d>0.005 && d<0.3){ return Math.min(HIST, Math.max(WINDOW, Math.ceil(1.15/d/10)*10)); }
     return WINDOW;
   }
-  const H = 1/400;                 // passo de integração [s]
-  const $ = id => document.getElementById(id);
-  const fmt = (v,d=2) => v.toFixed(d).replace('.',',');
-  const fmtR = r => fmt(r, Math.abs(r*100-Math.round(r*100))>1e-6 ? 3 : 2);
-  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-
-  const P = {r:0.9, xi:0, x0:0, v0:0, sweep:false};
-  const S = {t:0, x:0, v:0, th:0, hist:[], running:true, broken:false, slow:false, fast:false, scale:1.2, rec:0};
 
   // ---------- simulação ----------
   function rNow(){ return P.sweep ? Math.min(2.6, 0.2 + 2.4*S.t/40) : P.r; }
@@ -266,6 +346,11 @@ footer{font-size:12px;color:var(--muted)}
     $('broken').classList.remove('show');
     S.running = true; updatePlay();
   }
+  function recentAmp(){
+    let m = 0; const t0 = S.t - 1.05;
+    for(let i=S.hist.length-1;i>=0 && S.hist[i][0]>=t0;i--) m = Math.max(m, Math.abs(S.hist[i][1]));
+    return Math.max(m, Math.abs(S.x));
+  }
 
   // ---------- canvas ----------
   function fit(c){
@@ -276,69 +361,82 @@ footer{font-size:12px;color:var(--muted)}
     const g = c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0);
     return [g, r.width, r.height];
   }
+  function sevColor(a){ return a < 0.4*LIMIT ? css('--ok') : (a < 0.75*LIMIT ? css('--warn') : css('--crit')); }
 
   function drawAnim(){
     const [g,w,h] = fit($('anim'));
-    const ink=css('--ink'), muted=css('--muted'), acc_=css('--accent'), force=css('--force'), line=css('--line'), soft=css('--soft');
+    const ink=css('--ink'), muted=css('--muted'), acc_=css('--accent'), force=css('--force'), soft=css('--soft');
     g.clearRect(0,0,w,h);
-    const floorY = h-30, wallX = 26, mw = 78, mh = 70;
-    const rest = Math.min(w*0.48, 300), travel = Math.min(w*0.22, 150);
-    const mx = wallX + rest + travel * Math.max(-1.2, Math.min(1.2, S.x / S.scale));
+    const floorY = h-24, wallX = 18;
+    const mh = Math.min(70, h*0.42), mw = mh*1.12;
+    const A = Math.min(46, w*0.085);                 // comprimento máx. da seta
+    const avail = w - wallX - mw - 2*A - 18;
+    const rest = avail*0.52, travel = avail*0.42;
+    const u = clamp(S.x / S.scale, -1.15, 1.15);
+    const mx = wallX + rest + travel*u;
+    const eqX = wallX + rest + mw/2;
+    // faixa de amplitude recente
+    const am = clamp(recentAmp()/S.scale, 0, 1.15)*travel;
+    g.fillStyle = sevColor(recentAmp()); g.globalAlpha = 0.12;
+    g.fillRect(eqX-am, floorY-mh-14, 2*am, mh+14); g.globalAlpha = 1;
     // parede e piso
     g.strokeStyle = muted; g.lineWidth = 1;
-    for(let y=14; y<floorY; y+=10){ g.beginPath(); g.moveTo(wallX-12,y+10); g.lineTo(wallX,y); g.stroke(); }
-    for(let x=wallX; x<w-6; x+=12){ g.beginPath(); g.moveTo(x,floorY+12); g.lineTo(x+10,floorY+2); g.stroke(); }
+    for(let y=10; y<floorY; y+=9){ g.beginPath(); g.moveTo(wallX-10,y+9); g.lineTo(wallX,y); g.stroke(); }
+    for(let x=wallX; x<w-4; x+=11){ g.beginPath(); g.moveTo(x,floorY+10); g.lineTo(x+9,floorY+1); g.stroke(); }
     g.strokeStyle = ink; g.lineWidth = 2;
-    g.beginPath(); g.moveTo(wallX,10); g.lineTo(wallX,floorY); g.lineTo(w-6,floorY); g.stroke();
+    g.beginPath(); g.moveTo(wallX,6); g.lineTo(wallX,floorY); g.lineTo(w-4,floorY); g.stroke();
     // posição de equilíbrio
     g.setLineDash([4,4]); g.strokeStyle = muted; g.lineWidth=1;
-    const eqX = wallX+rest+mw/2;
-    g.beginPath(); g.moveTo(eqX, floorY-mh-26); g.lineTo(eqX, floorY); g.stroke(); g.setLineDash([]);
+    g.beginPath(); g.moveTo(eqX, floorY-mh-20); g.lineTo(eqX, floorY); g.stroke(); g.setLineDash([]);
     g.fillStyle = muted; g.font = '11px "IBM Plex Mono", monospace'; g.textAlign='center';
-    g.fillText('x = 0', eqX, floorY-mh-30);
-    // mola
+    g.fillText('x = 0', eqX, floorY-mh-24);
+    // mola (cor indica tração/compressão)
     const sy = floorY - mh*0.72, n = 12, x1 = wallX, x2 = mx;
-    g.strokeStyle = ink; g.lineWidth = 1.8; g.beginPath(); g.moveTo(x1,sy);
-    const lead = 10, seg = (x2-x1-2*lead)/n;
+    const st = clamp(S.x/S.scale,-1,1);
+    g.strokeStyle = st>0.05 ? css('--force') : (st<-0.05 ? acc_ : ink); g.globalAlpha = 0.55 + 0.45*Math.abs(st);
+    g.lineWidth = 2; g.beginPath(); g.moveTo(x1,sy);
+    const lead = 8, seg = (x2-x1-2*lead)/n;
     g.lineTo(x1+lead, sy);
-    for(let i=0;i<n;i++){ g.lineTo(x1+lead+seg*(i+0.5), sy + (i%2?8:-8)); }
-    g.lineTo(x2-lead, sy); g.lineTo(x2, sy); g.stroke();
-    // amortecedor (aparece só com ξ > 0)
+    for(let i=0;i<n;i++){ g.lineTo(x1+lead+seg*(i+0.5), sy + (i%2?7:-7)); }
+    g.lineTo(x2-lead, sy); g.lineTo(x2, sy); g.stroke(); g.globalAlpha=1;
+    // amortecedor
     const dy = floorY - mh*0.28;
-    g.globalAlpha = P.xi > 0 ? 1 : 0.25;
-    const cylL = wallX + 40, cylR = cylL + 70, pistonX = Math.max(cylL+12, Math.min(cylR-6, mx - 40));
+    g.strokeStyle = ink; g.lineWidth = 1.8;
+    g.globalAlpha = P.xi > 0 ? 1 : 0.22;
+    const cylL = wallX + 22, cylR = cylL + Math.min(70, rest*0.45), pistonX = clamp(mx - 34, cylL+10, cylR-6);
     g.beginPath(); g.moveTo(wallX,dy); g.lineTo(cylL,dy); g.stroke();
-    g.beginPath(); g.moveTo(cylR,dy-10); g.lineTo(cylL,dy-10); g.lineTo(cylL,dy+10); g.lineTo(cylR,dy+10); g.stroke();
-    g.beginPath(); g.moveTo(pistonX,dy-8); g.lineTo(pistonX,dy+8); g.moveTo(pistonX,dy); g.lineTo(mx,dy); g.stroke();
+    g.beginPath(); g.moveTo(cylR,dy-9); g.lineTo(cylL,dy-9); g.lineTo(cylL,dy+9); g.lineTo(cylR,dy+9); g.stroke();
+    g.beginPath(); g.moveTo(pistonX,dy-7); g.lineTo(pistonX,dy+7); g.moveTo(pistonX,dy); g.lineTo(mx,dy); g.stroke();
     g.globalAlpha = 1;
     // massa
-    g.fillStyle = soft; g.strokeStyle = acc_; g.lineWidth = 2;
-    g.beginPath(); g.rect(mx, floorY-mh-6, mw, mh); g.fill(); g.stroke();
-    g.fillStyle = ink; g.beginPath(); g.arc(mx+18, floorY-3, 4.5, 0, 7); g.arc(mx+mw-18, floorY-3, 4.5, 0, 7); g.fill();
+    const grd = g.createLinearGradient(mx, floorY-mh-4, mx, floorY-4);
+    grd.addColorStop(0, soft); grd.addColorStop(1, css('--panel'));
+    g.fillStyle = grd; g.strokeStyle = acc_; g.lineWidth = 2;
+    g.beginPath(); if(g.roundRect) g.roundRect(mx, floorY-mh-4, mw, mh, 6); else g.rect(mx, floorY-mh-4, mw, mh); g.fill(); g.stroke();
+    g.fillStyle = ink; g.beginPath(); g.arc(mx+mw*0.24, floorY-2.5, 4, 0, 7); g.arc(mx+mw*0.76, floorY-2.5, 4, 0, 7); g.fill();
     g.fillStyle = acc_; g.font = 'italic 600 20px "IBM Plex Sans", sans-serif'; g.textAlign='center';
-    g.fillText('m', mx+mw/2, floorY-mh/2+2);
+    g.fillText('m', mx+mw/2, floorY-mh/2+3);
     // força
-    const f = Math.sin(S.th), fy = floorY - mh/2 - 6, fx0 = mx + mw + 6, L = 46*f;
-    g.strokeStyle = force; g.fillStyle = force; g.lineWidth = 3;
+    const f = Math.sin(S.th), fy = floorY - mh/2 - 4, fx0 = mx + mw + 6 + A, L = A*f;
+    g.strokeStyle = force; g.fillStyle = force; g.lineWidth = 3.5;
     if(Math.abs(L) > 2){
-      const fx1 = fx0 + 46 + L;
-      g.beginPath(); g.moveTo(fx0+46, fy); g.lineTo(fx1, fy); g.stroke();
-      const s = Math.sign(L);
-      g.beginPath(); g.moveTo(fx1+s*8, fy); g.lineTo(fx1, fy-6); g.lineTo(fx1, fy+6); g.fill();
+      const fx1 = fx0 + L, s = Math.sign(L);
+      g.beginPath(); g.moveTo(fx0, fy); g.lineTo(fx1, fy); g.stroke();
+      g.beginPath(); g.moveTo(fx1+s*9, fy); g.lineTo(fx1, fy-6); g.lineTo(fx1, fy+6); g.fill();
     }
-    g.font = '600 13px "IBM Plex Sans", sans-serif'; g.fillText('F(t)', fx0+46, fy-14);
+    g.font = '600 13px "IBM Plex Sans", sans-serif'; g.fillText('F(t)', fx0, fy-16);
   }
 
   function axes(g,w,h,pad){
     g.strokeStyle = css('--line'); g.lineWidth = 1;
     g.strokeRect(pad.l, pad.t, w-pad.l-pad.r, h-pad.t-pad.b);
   }
+  function niceStep(m){ const raw = m/2.5, p = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw/p; return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p; }
 
   function drawTime(){
     const [g,w,h] = fit($('timeplot'));
     g.clearRect(0,0,w,h);
-    const pad = {l:44,r:20,t:10,b:26}, pw = w-pad.l-pad.r, ph = h-pad.t-pad.b;
-    // escala com histerese
+    const pad = {l:40,r:12,t:10,b:24}, pw = w-pad.l-pad.r, ph = h-pad.t-pad.b;
     const WIN = win();
     const t1 = Math.max(WIN, S.t), t0 = t1 - WIN;
     let m = 1;
@@ -349,85 +447,175 @@ footer{font-size:12px;color:var(--muted)}
     const X = t => pad.l + (t-t0)/WIN*pw, Y = v => pad.t + ph/2 - v/ym*ph/2;
     axes(g,w,h,pad);
     g.font = '11px "IBM Plex Mono", monospace'; g.fillStyle = css('--muted'); g.strokeStyle = css('--line');
-    // grade
     g.textAlign='right';
     const yt = niceStep(ym);
     for(let v=-Math.floor(ym/yt)*yt; v<=ym+1e-9; v+=yt){
       g.beginPath(); g.moveTo(pad.l, Y(v)); g.lineTo(w-pad.r, Y(v)); g.globalAlpha = v===0?1:0.5; g.stroke(); g.globalAlpha=1;
-      g.fillText(fmt(v, yt<1?1:0), pad.l-6, Y(v)+4);
+      g.fillText(fmt(v, yt<1?1:0), pad.l-5, Y(v)+4);
     }
     g.textAlign='center';
-    const dt_ = WIN>30 ? 5 : 2;
-    for(let t=Math.ceil(t0/dt_)*dt_; t<=t1; t+=dt_){ g.fillText(Math.round(t)+' s', X(t), h-8); }
-    // curvas
+    const narrow = w<520;
+    const dt_ = WIN>30 ? (narrow?10:5) : (narrow?4:2);
+    for(let t=Math.ceil(t0/dt_)*dt_; t<=t1; t+=dt_){ g.fillText(Math.round(t)+(narrow?'':' s'), X(t), h-7); }
+    if(narrow){ g.textAlign='right'; g.fillText('t [s]', w-pad.r-2, pad.t+ph-6); g.textAlign='center'; }
     g.save(); g.beginPath(); g.rect(pad.l,pad.t,pw,ph); g.clip();
+    // linhas de ruptura
+    if(ym > LIMIT*0.6){
+      g.setLineDash([6,5]); g.strokeStyle = css('--crit'); g.lineWidth = 1.2;
+      [LIMIT,-LIMIT].forEach(v=>{ g.beginPath(); g.moveTo(pad.l,Y(v)); g.lineTo(w-pad.r,Y(v)); g.stroke(); });
+      g.setLineDash([]);
+    }
+    // força
     g.setLineDash([5,4]); g.strokeStyle = css('--force'); g.lineWidth = 1.4; g.beginPath();
     S.hist.forEach((p,i)=>{ i? g.lineTo(X(p[0]),Y(p[2])) : g.moveTo(X(p[0]),Y(p[2])); }); g.stroke(); g.setLineDash([]);
+    // área sob x(t)
+    if(S.hist.length>1){
+      g.fillStyle = css('--accent'); g.globalAlpha = 0.10; g.beginPath(); g.moveTo(X(S.hist[0][0]), Y(0));
+      S.hist.forEach(p=> g.lineTo(X(p[0]),Y(p[1]))); g.lineTo(X(S.hist[S.hist.length-1][0]), Y(0)); g.closePath(); g.fill(); g.globalAlpha = 1;
+    }
     g.strokeStyle = css('--accent'); g.lineWidth = 2; g.beginPath();
     S.hist.forEach((p,i)=>{ i? g.lineTo(X(p[0]),Y(p[1])) : g.moveTo(X(p[0]),Y(p[1])); }); g.stroke();
-    if(S.hist.length){ const p = S.hist[S.hist.length-1]; g.fillStyle = css('--accent'); g.beginPath(); g.arc(X(p[0]),Y(p[1]),3.5,0,7); g.fill(); }
+    if(S.hist.length){ const p = S.hist[S.hist.length-1]; g.fillStyle = css('--accent'); g.beginPath(); g.arc(X(p[0]),Y(p[1]),4,0,7); g.fill(); }
     g.restore();
-    $('scaleinfo').textContent = 'escala: ±' + fmt(ym, ym<10?1:0) + ' δst';
+    $('scaleinfo').textContent = 'escala: ±' + fmt(ym, ym<10?1:0) + ' δst · janela ' + WIN + ' s';
   }
-  function niceStep(m){ const raw = m/2.5, p = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw/p; return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p; }
 
   function amp(r,xi){ return 1/Math.sqrt((1-r*r)**2 + (2*xi*r)**2); }
   function phase(r,xi){ return Math.atan2(2*xi*r, 1-r*r)*180/Math.PI; }
+  function phiNow(){ const r=rNow(), xi=P.xi; return xi>0 ? phase(r,xi) : (Math.abs(r-1)<0.005 ? 90 : (r<1?0:180)); }
 
   function drawAmp(){
     const [g,w,h] = fit($('ampplot'));
     g.clearRect(0,0,w,h);
-    const pad = {l:34,r:10,t:10,b:22}, pw=w-pad.l-pad.r, ph=h-pad.t-pad.b, YM=8;
+    const pad = {l:30,r:10,t:10,b:22}, pw=w-pad.l-pad.r, ph=h-pad.t-pad.b, YM=8;
     const X = r => pad.l + r/3*pw, Y = a => pad.t + ph - Math.min(a,YM)/YM*ph;
+    // faixas de regime
+    const zone = (a,b,c)=>{ g.fillStyle=css(c); g.globalAlpha=0.08; g.fillRect(X(a),pad.t,X(b)-X(a),ph); g.globalAlpha=1; };
+    zone(0,0.75,'--ok'); zone(0.75,1.25,'--crit'); zone(1.25,3,'--inert');
     axes(g,w,h,pad);
     g.font='11px "IBM Plex Mono", monospace'; g.fillStyle=css('--muted'); g.strokeStyle=css('--line');
-    g.textAlign='right'; for(let a=0;a<=YM;a+=2){ g.beginPath(); g.moveTo(pad.l,Y(a)); g.lineTo(w-pad.r,Y(a)); g.globalAlpha=.5; g.stroke(); g.globalAlpha=1; g.fillText(a, pad.l-6, Y(a)+4); }
+    g.textAlign='right'; for(let a=0;a<=YM;a+=2){ g.beginPath(); g.moveTo(pad.l,Y(a)); g.lineTo(w-pad.r,Y(a)); g.globalAlpha=.5; g.stroke(); g.globalAlpha=1; g.fillText(a, pad.l-5, Y(a)+4); }
     g.textAlign='center'; for(let r=0;r<=3;r+=0.5){ g.fillText(fmt(r,1), X(r), h-6); }
     g.save(); g.beginPath(); g.rect(pad.l,pad.t,pw,ph); g.clip();
-    // ξ = 0
     g.setLineDash([4,4]); g.strokeStyle=css('--muted'); g.lineWidth=1.2; g.beginPath();
     let first=true; for(let i=0;i<=600;i++){ const r=i/200; if(Math.abs(r-1)<0.004){first=true; continue;} const y=Y(amp(r,0)); first? g.moveTo(X(r),y):g.lineTo(X(r),y); first=false; } g.stroke(); g.setLineDash([]);
-    // ξ atual
-    if(P.xi>0){ g.strokeStyle=css('--accent'); g.lineWidth=2.2; g.beginPath(); for(let i=0;i<=600;i++){ const r=i/200; i? g.lineTo(X(r),Y(amp(r,P.xi))):g.moveTo(X(r),Y(amp(r,P.xi))); } g.stroke(); }
-    // linha r = 1
+    if(P.xi>0){ g.strokeStyle=css('--accent'); g.lineWidth=2.4; g.beginPath(); for(let i=0;i<=600;i++){ const r=i/200; i? g.lineTo(X(r),Y(amp(r,P.xi))):g.moveTo(X(r),Y(amp(r,P.xi))); } g.stroke(); }
     g.strokeStyle=css('--crit'); g.globalAlpha=.5; g.beginPath(); g.moveTo(X(1),pad.t); g.lineTo(X(1),pad.t+ph); g.stroke(); g.globalAlpha=1;
     g.restore();
-    // marcador
     const r = rNow(), a = amp(r,P.xi);
+    g.strokeStyle=css('--force'); g.globalAlpha=.35; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(r),pad.t+ph); g.lineTo(X(r), Y(isFinite(a)?a:YM)); g.stroke(); g.setLineDash([]); g.globalAlpha=1;
     g.fillStyle=css('--force'); g.strokeStyle=css('--panel'); g.lineWidth=2;
-    g.beginPath(); g.arc(X(r), Y(isFinite(a)?a:YM), 6, 0, 7); g.fill(); g.stroke();
+    g.beginPath(); g.arc(X(r), Y(isFinite(a)?a:YM), 7, 0, 7); g.fill(); g.stroke();
     g.fillStyle=css('--ink'); g.textAlign='left'; g.font='12px "IBM Plex Sans", sans-serif';
     g.fillText('|X|/δst', pad.l+6, pad.t+14);
 
-    // fase
     const [q,w2,h2] = fit($('phaseplot'));
     q.clearRect(0,0,w2,h2);
-    const pd = {l:34,r:10,t:8,b:22}, pw2=w2-pd.l-pd.r, ph2=h2-pd.t-pd.b;
+    const pd = {l:30,r:10,t:8,b:22}, pw2=w2-pd.l-pd.r, ph2=h2-pd.t-pd.b;
     const X2 = r => pd.l + r/3*pw2, Y2 = p => pd.t + ph2 - p/180*ph2;
     axes(q,w2,h2,pd);
     q.font='11px "IBM Plex Mono", monospace'; q.fillStyle=css('--muted'); q.textAlign='right';
-    q.fillText('0°',pd.l-6,Y2(0)+4); q.fillText('180°',pd.l-4,Y2(180)+8);
+    q.fillText('0°',pd.l-4,Y2(0)+4); q.fillText('180°',pd.l-2,Y2(180)+9);
     q.textAlign='center'; for(let r=0;r<=3;r+=0.5){ q.fillText(fmt(r,1), X2(r), h2-6); }
     q.setLineDash([4,4]); q.strokeStyle=css('--muted'); q.lineWidth=1.2; q.beginPath(); q.moveTo(X2(0),Y2(0)); q.lineTo(X2(1),Y2(0)); q.lineTo(X2(1),Y2(180)); q.lineTo(X2(3),Y2(180)); q.stroke(); q.setLineDash([]);
     if(P.xi>0){ q.strokeStyle=css('--accent'); q.lineWidth=2.2; q.beginPath(); for(let i=0;i<=600;i++){ const rr=i/200; i? q.lineTo(X2(rr),Y2(phase(rr,P.xi))):q.moveTo(X2(rr),Y2(phase(rr,P.xi))); } q.stroke(); }
-    const ph0 = P.xi>0 ? phase(r,P.xi) : (r<1?0:(r>1?180:90));
-    q.fillStyle=css('--force'); q.strokeStyle=css('--panel'); q.lineWidth=2; q.beginPath(); q.arc(X2(r),Y2(ph0),5,0,7); q.fill(); q.stroke();
+    q.fillStyle=css('--force'); q.strokeStyle=css('--panel'); q.lineWidth=2; q.beginPath(); q.arc(X2(r),Y2(phiNow()),6,0,7); q.fill(); q.stroke();
     q.fillStyle=css('--ink'); q.textAlign='left'; q.font='12px "IBM Plex Sans", sans-serif'; q.fillText('φ', pd.l+6, pd.t+14);
   }
+
+  // fasores: força (laranja) e resposta em regime permanente (azul), atrasada de φ
+  function drawPhasor(){
+    const [g,w,h] = fit($('phasor'));
+    g.clearRect(0,0,w,h);
+    const cx=w/2, cy=h/2, R=Math.min(w,h)/2-8;
+    g.strokeStyle=css('--line'); g.lineWidth=1;
+    g.beginPath(); g.arc(cx,cy,R,0,7); g.stroke();
+    g.beginPath(); g.moveTo(cx-R,cy); g.lineTo(cx+R,cy); g.moveTo(cx,cy-R); g.lineTo(cx,cy+R); g.stroke();
+    const th = S.th, ph = phiNow()*Math.PI/180;
+    const a = amp(rNow(),P.xi), la = isFinite(a) ? clamp(0.35+0.25*Math.log10(a+1)*2.2,0.25,1) : 1;
+    const arrow=(ang,len,col,wd)=>{
+      const ex=cx+len*R*Math.cos(ang), ey=cy-len*R*Math.sin(ang);
+      g.strokeStyle=col; g.fillStyle=col; g.lineWidth=wd;
+      g.beginPath(); g.moveTo(cx,cy); g.lineTo(ex,ey); g.stroke();
+      const hx=Math.cos(ang), hy=-Math.sin(ang);
+      g.beginPath(); g.moveTo(ex+hx*2,ey+hy*2); g.lineTo(ex-hx*9-hy*5,ey-hy*9+hx*5); g.lineTo(ex-hx*9+hy*5,ey-hy*9-hx*5); g.fill();
+    };
+    // arco da fase
+    if(ph>0.02){ g.strokeStyle=css('--muted'); g.lineWidth=1.2; g.beginPath(); g.arc(cx,cy,R*0.28,-th,-th+ph,false); g.stroke(); }
+    arrow(th,0.62,css('--force'),3);
+    arrow(th-ph,la,css('--accent'),3);
+    g.fillStyle=css('--ink'); g.beginPath(); g.arc(cx,cy,3,0,7); g.fill();
+  }
+
+  // ---------- entradas ----------
+  const fields = {
+    r:  {min:0.05, max:3,   d:r=>fmtR(r)},
+    xi: {min:0,    max:0.5, d:v=>fmt(v,3)},
+    x0: {min:-3,   max:3,   d:v=>fmt(v,1)},
+    v0: {min:-15,  max:15,  d:v=>fmt(v,1)}
+  };
+  function setTrack(id){
+    const el=$(id), p=(+el.value-el.min)/(el.max-el.min)*100;
+    el.style.setProperty('--p', p+'%');
+  }
+  function syncInputs(){
+    const vals = {r:rNow(), xi:P.xi, x0:P.x0, v0:P.v0};
+    for(const k in fields){
+      const n=$(k+'N');
+      if(document.activeElement!==n){ n.value = fields[k].d(vals[k]); n.classList.remove('bad'); }
+      if(document.activeElement!==$(k)){ $(k).value = vals[k]; }
+      setTrack(k);
+    }
+  }
+  function markPresets(){
+    document.querySelectorAll('#presets button').forEach(b=>{
+      const on = b.dataset.sweep ? P.sweep : (!P.sweep && Math.abs(+b.dataset.r-P.r)<1e-9 && Math.abs(+b.dataset.xi-P.xi)<1e-9);
+      b.classList.toggle('on', on);
+    });
+  }
+  Object.keys(fields).forEach(k=>{
+    const sl=$(k), n=$(k+'N'), F=fields[k];
+    sl.addEventListener('input', e=>{
+      const v=+e.target.value;
+      if(k==='r'){ P.sweep=false; P.r=v; }
+      else if(k==='xi'){ P.xi=v; }
+      else { P[k]=v; reset(); }
+      updateText(); markPresets();
+    });
+    const commit=()=>{
+      const v=parseFloat(n.value.replace(',', '.').trim());
+      if(!isFinite(v)){ n.classList.add('bad'); return; }
+      const c=clamp(v,F.min,F.max);
+      if(k==='r'){ P.sweep=false; P.r=c; } else P[k]=c;
+      n.classList.remove('bad'); n.blur();
+      reset(); updateText(); markPresets(); syncInputs();
+    };
+    n.addEventListener('change', commit);
+    n.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); commit(); } });
+    n.addEventListener('focus', ()=> n.select());
+  });
+
+  function applyPreset(b){
+    if(b.dataset.sweep){ P.sweep=true; P.xi=0.05; }
+    else { P.sweep=false; P.r=+b.dataset.r; P.xi=+b.dataset.xi; }
+    P.x0=0; P.v0=0;
+    reset(); updateText(); markPresets(); syncInputs();
+  }
+  document.querySelectorAll('#presets button').forEach(b => b.onclick = () => applyPreset(b));
+  document.querySelectorAll('.card .go').forEach(b => b.onclick = () => { applyPreset(b); $('p-sys').scrollIntoView({behavior:'smooth',block:'start'}); });
 
   // ---------- textos ----------
   function updateText(){
     const r = rNow(), xi = P.xi, a = amp(r,xi), phi = phase(r,xi);
-    $('rOut').textContent = fmtR(r) + (P.sweep ? ' ↗' : '');
-    $('xiOut').textContent = fmt(xi,3);
-    $('x0Out').textContent = fmt(P.x0,1) + ' δst';
-    $('v0Out').textContent = fmt(P.v0,1);
-    $('eq').innerHTML = 'ẍ + 2·<i>' + fmt(xi,3) + '</i>·ω₀·ẋ + ω₀²·x = (F₀/m)·sen(<b>' + fmtR(r) + '</b>·ω₀·t)  &nbsp;&nbsp;com ω₀ = 2π rad/s';
-    $('roA').textContent = (xi===0 && Math.abs(r-1)<0.005) ? '∞' : fmt(a, a>=10?1:2);
-    $('roPhi').textContent = (xi===0 && Math.abs(r-1)<0.005) ? 'indef.' : Math.round(xi===0 ? (r<1?0:180) : phi) + '°';
+    $('tagR').textContent = 'ω = ' + fmtR(r) + '·ω₀' + (P.sweep ? ' ↗' : '');
+    $('tagXi').textContent = 'ξ = ' + fmt(xi,3);
+    const res = (xi===0 && Math.abs(r-1)<0.005);
+    $('roA').textContent = res ? '∞' : fmt(a, a>=10?1:2);
+    $('roAbox').style.setProperty('--c', res||a>5 ? 'var(--crit)' : (a>1.5 ? 'var(--warn)' : 'var(--ok)'));
+    $('roPhi').textContent = res ? 'indef.' : Math.round(xi===0 ? (r<1?0:180) : phi) + '°';
     $('roTb').textContent = (xi<0.02 && Math.abs(1-r)>0.005 && Math.abs(1-r)<0.3) ? fmt(1/Math.abs(1-r),1)+' s' : '–';
     let pill, txt, c;
-    if(xi===0 && Math.abs(r-1)<0.005){
+    if(res){
       pill='RESSONÂNCIA'; c='--crit';
       txt='A força empurra sempre no ritmo natural da estrutura, como alguém empurrando um balanço na hora certa. Sem amortecimento, a amplitude cresce linearmente com o tempo, sem limite.';
     } else if(Math.abs(r-1)<0.12 && xi<0.02){
@@ -441,13 +629,16 @@ footer{font-size:12px;color:var(--muted)}
       pill='DOMINA A RIGIDEZ'; c='--ok';
       txt='A força é lenta comparada ao ritmo natural. A mola tem tempo de acompanhar, a massa se move junto com a força (em fase) e a resposta fica próxima da estática.';
     } else {
-      pill='DOMINA A INÉRCIA'; c='--accent';
+      pill='DOMINA A INÉRCIA'; c='--inert';
       txt='A força é rápida demais para a massa acompanhar. A resposta fica pequena e em oposição à força (fora de fase). É o princípio do isolamento de vibrações.';
     }
     if(xi>0 && S.t<3 && !(Math.abs(r-1)<0.2)) txt += ' No começo você ainda vê o transiente; ele some com o tempo por causa do amortecimento.';
     $('status').style.setProperty('--c', 'var('+c+')');
     $('pill').textContent = pill; $('explain').textContent = txt;
     $('clock').textContent = 't = ' + fmt(S.t,1) + ' s';
+    const ra = recentAmp(), frac = clamp(ra/LIMIT,0,1);
+    $('mfill').style.width = (frac*100)+'%'; $('mfill').style.background = sevColor(ra);
+    $('mval').textContent = fmt(ra, ra<10?1:0) + ' δst';
   }
 
   // ---------- eventos ----------
@@ -456,16 +647,6 @@ footer{font-size:12px;color:var(--muted)}
   $('reset').onclick = reset; $('brokenReset').onclick = reset;
   $('speed').onclick = () => { S.slow = !S.slow; if(S.slow){ S.fast=false; $('fast').setAttribute('aria-pressed', false); } $('speed').setAttribute('aria-pressed', S.slow); };
   $('fast').onclick = () => { S.fast = !S.fast; if(S.fast){ S.slow=false; $('speed').setAttribute('aria-pressed', false); } $('fast').setAttribute('aria-pressed', S.fast); };
-  $('r').oninput = e => { P.sweep=false; P.r=+e.target.value; updateText(); };
-  $('xi').oninput = e => { P.xi=+e.target.value; updateText(); };
-  $('x0').oninput = e => { P.x0=+e.target.value; reset(); updateText(); };
-  $('v0').oninput = e => { P.v0=+e.target.value; reset(); updateText(); };
-  document.querySelectorAll('#presets button').forEach(b => b.onclick = () => {
-    if(b.dataset.sweep){ P.sweep=true; P.xi=0.05; }
-    else { P.sweep=false; P.r=+b.dataset.r; P.xi=+b.dataset.xi; $('r').value=P.r; }
-    P.x0=0; P.v0=0; $('x0').value=0; $('v0').value=0; $('xi').value=P.xi;
-    reset(); updateText();
-  });
 
   // ---------- laço ----------
   let last = null;
@@ -476,14 +657,13 @@ footer{font-size:12px;color:var(--muted)}
       dt *= S.slow ? 0.25 : (S.fast ? 4 : 1);
       const n = Math.round(dt/H);
       for(let i=0;i<n && !S.broken;i++) step(H);
-      if(P.sweep) $('r').value = rNow();
     }
-    updateText(); drawAnim(); drawTime(); drawAmp();
+    updateText(); if(P.sweep) syncInputs();
+    drawAnim(); drawTime(); drawAmp(); drawPhasor();
     requestAnimationFrame(frame);
   }
-  reset(); updateText();
-  // pré-roda alguns segundos para a página abrir já em movimento
-  for(let i=0;i<4/H;i++) step(H);
+  reset(); updateText(); syncInputs(); markPresets();
+  for(let i=0;i<4/H;i++) step(H);   // pré-roda alguns segundos
   requestAnimationFrame(frame);
 })();
 </script>
